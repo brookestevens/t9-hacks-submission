@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/109/three.js' crossorigin="true"></script>
+  <!-- P5 for fft -->
+  <script src = 'https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.js' ></script>
+  <script src = 'https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.dom.js'></script>
+  <script src = 'https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.sound.js'></script>
+  <meta charset="utf-8">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      color:#f2c7ff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    h2{
+      margin-bottom: 0px;
+    }
+    #defaultCanvas0{
+      display: none;
+      margin: 0;
+    }
+    #form-wrapper {
+      position: absolute;
+      left: 3%;
+      top: 3%;
+    }
+  </style>
+  <title> T9 Music Visualizer </title>
+  <script src="./assets/OrbitControls.js"></script>
+  <script src="./assets/EffectComposer.js"></script>
+  <script src="./assets/RenderPass.js"></script>
+  <script src="/assets/ShaderPass.js"></script>
+  <script src="/assets/CopyShader.js"></script>
+  <script src="/assets/LuminosityHighPassShader.js"></script>
+  <script src="/assets/UnrealBloomPass.js"></script>
+</head>
+
+<body>
+  <div id="form-wrapper">
+    <h2 id="song-title"> Music Visualizer</h2>
+    <form id="song-form">
+      <label for="song-input"> Choose a Song to Upload</label>
+      <br />
+      <input type="file" id="song-input" name="song-file" accept=".mp3, .m4a" />
+    </form>
+  </div>
+  <script>
+    // Using p5 for beat detection
+    var fft, peak, amplitude, spectrum = null;
+    var song = null, level;
+
+    //Event Listener for the input
+    document.getElementById('song-input').addEventListener('change', e => {
+      song = loadSound(URL.createObjectURL(e.target.files[0]));
+      document.getElementById('song-title').innerHTML = e.target.files[0].name;
+    });
+
+    //Event listener for key down
+    window.addEventListener("keydown", event => {
+      if (event.keyCode === 80 && !song.isPlaying()) {
+        song.play();
+      }
+      else if(song.isPlaying()){
+        song.pause();
+      }
+      else {
+        song.loop();
+      }
+    });
+
+    function setup(){
+      fft = new p5.FFT(.8,512); //fast fourier transform
+      peak = new p5.PeakDetect()
+      amplitude = new p5.Amplitude();
+      //beat detected
+      peak.onPeak(() => {
+        //change colors in three
+        console.log('beat');
+        beat = true;
+      });
+    }
+
+    function draw(){
+      spectrum = fft.analyze(); //frequencies
+      level = amplitude.getLevel();
+      peak.update(fft);
+    }
+
+  </script>
+  <script src="./visualizer.js"> </script>
+</body>
+
+</html>
